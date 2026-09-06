@@ -1,0 +1,539 @@
+
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+    <title>E-commerce Mode - Recherche par image</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary-color: #ff6b6b;
+            --secondary-color: #4ecdc4;
+            --dark-color: #2d3436;
+            --light-color: #f8f9fa;
+        }
+        
+        body {
+            background-color: #f5f7fa;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+    
+        .upload-zone:hover {
+            border-color: var(--primary-color);
+            background-color: #fff9f9;
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+        }
+        
+        .product-card {
+            background: white;
+            border-radius: 15px;
+            overflow: hidden;
+            transition: all 0.3s;
+            border: 1px solid #eef1f5;
+            height: 100%;
+        }
+        
+        .product-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+        }
+        
+        .product-img {
+            height: 200px;
+            object-fit: cover;
+            width: 100%;
+            background-color: #f8f9fa;
+        }
+        
+        .product-info {
+            padding: 20px;
+        }
+        
+        .product-category {
+            color: var(--secondary-color);
+            font-weight: 600;
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        .product-name {
+            color: var(--dark-color);
+            font-weight: 700;
+            margin: 10px 0;
+            font-size: 1.1rem;
+            height: 50px;
+            overflow: hidden;
+        }
+        
+        .product-price {
+            color: var(--primary-color);
+            font-weight: 800;
+            font-size: 1.3rem;
+        }
+        
+        .similarity-badge {
+            background: linear-gradient(135deg, var(--secondary-color), #2ecc71);
+            color: white;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+        
+        .category-btn {
+            border-radius: 25px;
+            padding: 8px 20px;
+            margin: 5px;
+            transition: all 0.3s;
+            border: 2px solid transparent;
+        }
+        
+        .category-btn.active {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: white;
+            border-color: transparent;
+        }
+        
+        .category-btn:hover:not(.active) {
+            border-color: var(--secondary-color);
+            color: var(--secondary-color);
+        }
+        
+        .btn-primary-custom {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            border: none;
+            padding: 12px 30px;
+            border-radius: 25px;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+        
+        .btn-primary-custom:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+        }
+        
+        .btn-primary-custom:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+        
+        .image-preview-container {
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            margin: 20px auto;
+            max-width: 300px;
+        }
+        
+        footer {
+            background-color: var(--dark-color);
+            color: white;
+            padding: 40px 0;
+            margin-top: 60px;
+        }
+        
+        .results-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 15px;
+            border-radius: 10px;
+            margin: 20px 0;
+        }
+        
+        html {
+            font-size: 14px;
+            zoom: 0.9;
+        }
+
+        @media (max-width: 768px) {
+            html {
+                font-size: 12px;
+                zoom: 0.85;
+            }
+        }
+        .header {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: white;
+            padding: 25px 0;  
+            text-align: center;
+            margin-bottom: 30px;  
+        }
+
+        .header h1 {
+            font-size: 2rem;  
+            margin-bottom: 10px !important; 
+        }
+
+        .header .lead {
+            font-size: 1rem;  
+        }
+
+        .upload-zone {
+            border: 3px dashed #ddd;
+            border-radius: 20px;
+            padding: 40px 20px; 
+            background-color: white;
+            transition: all 0.3s;
+            cursor: pointer;
+            text-align: center;
+        }
+
+        .upload-zone i {
+            font-size: 3rem;  
+            color: var(--secondary-color);
+            margin-bottom: 15px;  
+        }
+
+        
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="container">
+            <h1 class="display-5 fw-bold mb-3">
+                <i class="fas fa-camera-retro me-2"></i>FashionFinder
+            </h1>
+            <p class="lead mb-0">Trouvez votre style avec une photo</p>
+        </div>
+    </div>
+
+    <div class="container my-5">
+        <div class="row mb-5">
+            <div class="col-md-8 mx-auto">
+                <div class="upload-zone" onclick="document.getElementById('imageInput').click();" 
+                     id="uploadZone">
+                    <i class="fas fa-cloud-upload-alt"></i>
+                    <h4>Déposez votre image ici</h4>
+                    <p class="text-muted">ou cliquez pour sélectionner un fichier</p>
+                    <p class="small text-muted">Formats supportés: JPG, PNG, JPEG, WEBP</p>
+                    <input type="file" id="imageInput" accept="image/*" style="display:none;" 
+                           onchange="previewImage(event)">
+                </div>
+                
+                <div id="imagePreview" class="my-4"></div>
+                
+                <div class="text-center">
+                    <button id="searchButton" class="btn btn-primary-custom btn-lg" 
+                            disabled onclick="searchProduct()">
+                        <i class="fas fa-search me-2"></i>Rechercher des articles similaires
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div class="row mb-4">
+            <div class="col-12">
+                <h4 class="mb-4" style="color: var(--dark-color);">
+                    <i class="fas fa-filter me-2"></i>Filtrer par catégorie
+                </h4>
+                <div class="d-flex flex-wrap justify-content-center">
+                    <button class="btn btn-outline-secondary category-btn active" 
+                            onclick="filterCategory('all')">Tous les produits</button>
+                    <button class="btn btn-outline-secondary category-btn" 
+                            onclick="filterCategory('jupes')">
+                        <i class="fas fa-female me-1"></i>Jupes
+                    </button>
+                    <button class="btn btn-outline-secondary category-btn" 
+                            onclick="filterCategory('pantalon')">
+                        <i class="fas fa-tshirt me-1"></i>Pantalons
+                    </button>
+                    <button class="btn btn-outline-secondary category-btn" 
+                            onclick="filterCategory('manteau')">
+                        <i class="fas fa-vest me-1"></i>Manteaux
+                    </button>
+                    <button class="btn btn-outline-secondary category-btn" 
+                            onclick="filterCategory('chaussure')">
+                        <i class="fas fa-shoe-prints me-1"></i>Chaussures
+                    </button>
+                    <button class="btn btn-outline-secondary category-btn" 
+                            onclick="filterCategory('chapeau')">
+                        <i class="fas fa-hat-cowboy me-1"></i>Chapeaux
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div id="productGrid" class="row">
+                {% for product in products %}
+                <div class="col-md-3 mb-4">
+                    <div class="product-card">
+                        <img src="static/{{ product.image }}" 
+                             class="product-img" 
+                             alt="{{ product.name }}"
+                             onerror="this.src='https://via.placeholder.com/300x200?text=Image+Non+Disponible'">
+                        <div class="product-info">
+                            <div class="product-category">{{ product.category }}</div>
+                            <div class="product-name">{{ product.name }}</div>
+                            <div class="d-flex justify-content-between align-items-center mt-3">
+                                <div class="product-price">{{ product.price }}</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        
+        <div id="loadingSpinner" class="text-center my-5" style="display: none;">
+            <div class="spinner-border text-primary" style="width: 3rem; height: 3rem;" role="status">
+                <span class="visually-hidden">Chargement...</span>
+            </div>
+            <p class="mt-3 text-muted">Recherche d'articles similaires en cours...</p>
+        </div>
+    </div>
+
+    <footer>
+        <div class="container">
+            <div class="row">
+                <div class="col-md-6">
+                    <h5><i class="fas fa-camera-retro me-2"></i>FashionFinder</h5>
+                    <p>Votre assistant shopping intelligent. Trouvez des vêtements similaires en un clic.</p>
+                </div>
+                <div class="col-md-6 text-end">
+                    <p>&copy; 2024 FashionFinder. Tous droits réservés.</p>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script>
+        let currentCategory = 'all';
+        let allProducts = [];
+        
+        document.addEventListener('DOMContentLoaded', function() {
+            loadRandomProducts();
+            setupDragAndDrop();
+        });
+        
+        function setupDragAndDrop() {
+            const uploadZone = document.getElementById('uploadZone');
+            
+            uploadZone.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                uploadZone.style.transform = 'scale(1.02)';
+                uploadZone.style.boxShadow = '0 15px 30px rgba(0,0,0,0.15)';
+            });
+            
+            uploadZone.addEventListener('dragleave', (e) => {
+                e.preventDefault();
+                uploadZone.style.transform = '';
+                uploadZone.style.boxShadow = '';
+            });
+            
+            uploadZone.addEventListener('drop', (e) => {
+                e.preventDefault();
+                uploadZone.style.transform = '';
+                uploadZone.style.boxShadow = '';
+                
+                const file = e.dataTransfer.files[0];
+                if (file && file.type.match('image.*')) {
+                    const input = document.getElementById('imageInput');
+                    const dataTransfer = new DataTransfer();
+                    dataTransfer.items.add(file);
+                    input.files = dataTransfer.files;
+                    
+                    const event = new Event('change', { bubbles: true });
+                    input.dispatchEvent(event);
+                }
+            });
+        }
+        
+        async function loadRandomProducts() {
+            try {
+                const response = await fetch('/api/products/random?count=8');
+                allProducts = await response.json();
+                displayProducts(allProducts);
+            } catch (error) {
+                console.error('Erreur:', error);
+                showError('Impossible de charger les produits');
+            }
+        }
+        
+        function displayProducts(products) {
+            const productGrid = document.getElementById('productGrid');
+            productGrid.innerHTML = '';
+            
+            if (products.length === 0) {
+                productGrid.innerHTML = `
+                    <div class="col-12 text-center py-5">
+                        <i class="fas fa-box-open fa-3x text-muted mb-3"></i>
+                        <h5 class="text-muted">Aucun produit trouvé</h5>
+                    </div>
+                `;
+                return;
+            }
+            
+            products.forEach(product => {
+                const similarityBadge = product.similarity ? 
+                    `<span class="similarity-badge">${product.similarity}</span>` : '';
+                
+                const productCard = `
+                    <div class="col-md-3 mb-4">
+                        <div class="product-card">
+                            <img src="static/${product.image}" 
+                                 class="product-img" 
+                                 alt="${product.name}"
+                                 onerror="this.src='https://via.placeholder.com/300x200?text=Image+Non+Disponible'">
+                            <div class="product-info">
+                                <div class="product-category">${product.category}</div>
+                                <div class="product-name">${product.name} ${similarityBadge}</div>
+                                <div class="d-flex justify-content-between align-items-center mt-3">
+                                    <div class="product-price">${product.price}</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                productGrid.innerHTML += productCard;
+            });
+        }
+        
+        async function filterCategory(category) {
+            currentCategory = category;
+            
+            document.querySelectorAll('.category-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            event.target.classList.add('active');
+            
+            if (category === 'all') {
+                await loadRandomProducts();
+            } else {
+                try {
+                    const response = await fetch(`/api/products/category/${category}`);
+                    const products = await response.json();
+                    allProducts = products;
+                    displayProducts(products);
+                } catch (error) {
+                    console.error('Erreur:', error);
+                    showError('Impossible de filtrer les produits');
+                }
+            }
+        }
+        
+        function previewImage(event) {
+            const imagePreview = document.getElementById('imagePreview');
+            const file = event.target.files[0];
+            
+            if (!file) return;
+            
+            if (!file.type.match('image.*')) {
+                showError('Veuillez sélectionner une image (JPG, PNG, GIF, WEBP)');
+                return;
+            }
+            
+            if (file.size > 5 * 1024 * 1024) {
+                showError('L\'image est trop volumineuse (max 5MB)');
+                return;
+            }
+            
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                imagePreview.innerHTML = `
+                    <div class="image-preview-container">
+                        <img src="${e.target.result}" 
+                             alt="Image à rechercher" 
+                             class="img-fluid rounded">
+                        <div class="bg-dark text-white p-3">
+                            <strong>${file.name}</strong> (${(file.size/1024).toFixed(1)} KB)
+                        </div>
+                    </div>
+                `;
+                document.getElementById('searchButton').disabled = false;
+            };
+            reader.readAsDataURL(file);
+        }
+        
+        async function searchProduct() {
+            const input = document.getElementById('imageInput');
+            if (!input.files[0]) {
+                showError('Veuillez sélectionner une image d\'abord');
+                return;
+            }
+            
+            document.getElementById('loadingSpinner').style.display = 'block';
+            document.getElementById('searchButton').disabled = true;
+            document.getElementById('searchButton').innerHTML = 
+                '<i class="fas fa-spinner fa-spin me-2"></i>Recherche en cours...';
+            
+            const formData = new FormData();
+            formData.append('image', input.files[0]);
+            
+            try {
+                const response = await fetch('/upload', {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`Erreur ${response.status}: ${response.statusText}`);
+                }
+                
+                const results = await response.json();
+                
+                if (results.error) {
+                    showError(results.error);
+                } else {
+                    allProducts = results.map(r => ({
+                        ...r,
+                        image: r.image_path || r.image
+                    }));
+                    
+                    displayProducts(allProducts);
+                    
+                    const productGrid = document.getElementById('productGrid');
+                    const resultsHeader = `
+                        <div class="col-12">
+                            <div class="results-header">
+                                <h5 class="mb-0">
+                                    <i class="fas fa-check-circle me-2"></i>
+                                    ${results.length} articles similaires trouvés
+                                </h5>
+                            </div>
+                        </div>
+                    `;
+                    productGrid.innerHTML = resultsHeader + productGrid.innerHTML;
+                    
+                    productGrid.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }
+            } catch (error) {
+                console.error('Erreur:', error);
+                showError('Erreur lors de la recherche. Veuillez réessayer.');
+            } finally {
+                document.getElementById('loadingSpinner').style.display = 'none';
+                document.getElementById('searchButton').disabled = false;
+                document.getElementById('searchButton').innerHTML = 
+                    '<i class="fas fa-search me-2"></i>Rechercher des articles similaires';
+            }
+        }
+        
+        function showError(message) {
+            const alertDiv = document.createElement('div');
+            alertDiv.className = 'alert alert-danger alert-dismissible fade show';
+            alertDiv.innerHTML = `
+                <i class="fas fa-exclamation-triangle me-2"></i>
+                ${message}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            `;
+            
+            document.querySelector('.container').insertBefore(alertDiv, 
+                document.querySelector('.container').firstChild);
+            
+            setTimeout(() => {
+                if (alertDiv.parentNode) {
+                    alertDiv.parentNode.removeChild(alertDiv);
+                }
+            }, 5000);
+        }
+    </script>
+</body>
+</html>
